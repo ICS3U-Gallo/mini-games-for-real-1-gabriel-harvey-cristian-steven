@@ -10,9 +10,10 @@ pygame.init()
 # Define the colors
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
-RED = (213, 50, 80)
-GREEN = (0, 255, 0)
+GREEN = (84, 214, 105)
+GREY = (101, 107, 102)
 BLUE = (50, 153, 213)
+RED = (156, 11, 11)
 
 # Define the screen dimensions
 SCREEN_WIDTH = 600
@@ -23,7 +24,7 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption('Snake Game')
 
 # Define the snake block size and speed
-BLOCK_SIZE = 10
+BLOCK_SIZE = 20
 SNAKE_SPEED = 15
 
 # Set the font for the score
@@ -32,13 +33,13 @@ score_font = pygame.font.SysFont("comicsansms", 35)
 
 # Function to display the score
 def Your_score(score):
-    value = score_font.render("Your Score: " + str(score), True, WHITE)
+    value = score_font.render("Cash collected: $" + str(score), True, WHITE)
     screen.blit(value, [0, 0])
 
 # Function to draw the snake
 def our_snake(block_size, snake_list):
     for x in snake_list:
-        pygame.draw.rect(screen, GREEN, [x[0], x[1], block_size, block_size])
+        pygame.draw.rect(screen, GREY, [x[0], x[1], block_size, block_size])
 
 # Function to display messages
 def message(msg, color):
@@ -108,7 +109,7 @@ def gameLoop():
         screen.fill(BLUE)
 
         # Draw the food
-        pygame.draw.rect(screen, RED, [foodx, foody, BLOCK_SIZE, BLOCK_SIZE])
+        pygame.draw.rect(screen, GREEN, [foodx, foody, BLOCK_SIZE, BLOCK_SIZE])
 
         # Update the snake's position
         snake_Head = []
@@ -144,4 +145,3 @@ def gameLoop():
 
 # Run the game loop
 gameLoop()
-
