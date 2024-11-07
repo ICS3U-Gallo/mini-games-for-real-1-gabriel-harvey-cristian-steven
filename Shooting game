@@ -1,43 +1,41 @@
 import pygame
-import math
-import random
-import time
 
 pygame.init()
 
 screen_width = 800
 screen_height = 600
+screen = pygame.display.set_mode((screen_width, screen_height))
+pygame.display.set_caption("Shooter Game")
 
 black = (0, 0, 0)
-white = (255, 255, 255)
-red = (255, 0, 0)
 green = (0, 255, 0)
-blue = (0, 0, 255)
-
-screen = pygame.display.set_mode((screen_width, screen_height))
-pygame.display.set_caption("Shooting Game")
-
-clock = pygame.time.Clock()
 
 player_width = 20
 player_height = 40
-player_x = 50 
+player_x = 50  # Player positioned on the left side
 player_y = screen_height // 2
 player_speed = 5
 
-def move_player():
-    global player_y
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_w] and player_y > 0:  # Move up
-        player_y -= player_speed
-    if keys[pygame.K_s] and player_y < screen_height - player_height:  # Move down
-        player_y += player_speed
-
 running = True
 while running:
-    screen.fill(black)
+    screen.fill(black)  # Fill the screen with black
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_UP] and player_y > 0:
+        player_y -= player_speed
+    if keys[pygame.K_DOWN] and player_y < screen_height - player_height:
+        player_y += player_speed
+
+    pygame.draw.rect(screen, green, (player_x, player_y, player_width, player_height))
+
+    pygame.display.flip()
 
 pygame.quit()
+
 
 
  
