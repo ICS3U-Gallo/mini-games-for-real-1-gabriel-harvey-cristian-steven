@@ -10,6 +10,11 @@ SIZE = (WIDTH, HEIGHT)
 screen = pygame.display.set_mode(SIZE)
 clock = pygame.time.Clock()
 
+death_sound = pygame.mixer.Sound("game_over.mp3")
+
+pygame.mixer.music.load("escape.mp3")
+pygame.mixer.music.play(-1)
+
 # ---------------------------
 # Initialize global variables
 
@@ -20,8 +25,10 @@ height2 = 0
 gravity = 5
 ground = False
 death = False
-platforms = [(470, 430, 150, 10), (275, 400, 150, 10)]
+platforms = [(470, 430, 150, 10), (275, 400, 150, 10), (111, 369, 150, 10), (111, 309, 150, 10), 
+             (280, 270, 340, 10)]
 walls = [(-30, -20, 50, 1000), (620, -20, 50, 1000)] 
+killbricks = [(340, 380.5, 20, 20), (241, 289.9, 20, 20), (111, 289.9, 20, 20)]
 # ---------------------------
 mario_rect = pygame.Rect(mario_x, mario_y, 15, 25)
 for platform in platforms:
@@ -73,12 +80,36 @@ while running:
             elif mario_rect.left < wall_rect.right and mario_rect.right > wall_rect.right:
                  mario_x = wall_rect.right
 
+    for kill in killbricks:
+        kill_rect = pygame.Rect(kill)
+        if mario_rect.colliderect(kill_rect):
+            mario_speed = 0
+            mario_x = 0
+            mario_y = 0
+            gravity = 0
+            
+            death = True
+            death_sound.play()
+            print("Game Over!")
+
+    if death == True:
+        pygame.mixer.music.stop()
+        pygame.time.delay(int(death_sound.get_length() * 1000))   
+        break
+
+    if mario_y > HEIGHT + 30 and not death:
+        death_sound.play()
+        death = True
+        print("Game Over!")
 
     # GAME STATE UPDATES
     # All game math and comparisons happen here
 
     # DRAWING
     screen.fill((36, 40, 64))
+
+    for x in range(300, 600, 75):
+        pygame.draw.rect(screen, (255, 0, 0), (x, 255, 15, 15))
 
     # Mario guy thing idk lol
     pygame.draw.rect(screen, (66, 66, 66), (mario_x, mario_y, 15, 15))
@@ -93,6 +124,8 @@ while running:
     # obby
     for platform in platforms:
         pygame.draw.rect(screen, (113, 122, 60), platform)
+    for kill in killbricks:
+        pygame.draw.rect(screen, (255, 0, 0), kill)
     # of the game loop
     pygame.display.flip()
     clock.tick(30)
