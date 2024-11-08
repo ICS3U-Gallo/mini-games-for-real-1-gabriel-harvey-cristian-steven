@@ -6,12 +6,18 @@ pygame.init()
 WIDTH, HEIGHT = 750, 900
 GROUND_HEIGHT = 100
 FPS = 60
+immunity = False
+immunityTime = 0
+allowedImmunity = 150
+lives = 3
 
 # colors
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLACK = (0, 0, 0)
+BLUE = (0, 0, 255)
+LIGHT_BLUE = (173, 216, 230)
 
 # Create the game window
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -29,6 +35,13 @@ obstacle_x = random.choice([0, 250, 500])  # Randomize spawn in one of the three
 obstacle_y = -obstacle_height  # Start above the screen (negative Y to make it fall down)
 obstacle_speed = 20  # Speed at which the enemy falls down
 
+# shield (boost) variables
+shield_radius = 25
+shield_x = random.choice([100, 350, 600])  # Randomize spawn in one of the three middle positions
+shield_y = -shield_radius  # Start above the screen (negative Y to make it fall down)
+shield_speed = 5
+shield_active = False
+
 # score
 score = 0
 
@@ -40,6 +53,19 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+
+    if immunity == True and immunityTime >= allowedImmunity:
+        immunity = False
+        immunityTime = 0 
+    elif immunity == True and immunityTime < allowedImmunity:
+        immunityTime += 1
+
+    # boosts in game to help player
+    if not shield_active:
+        if random.random() < 0.1:
+            shield_x = random.choice([100, 350, 600])  # Randomize spawn position
+            shield_y = -shield_radius  # Reset to top
+            shield_active = True  # Shield is now active and falling down
 
     # player input (left/right movement now)
     keys = pygame.key.get_pressed()
@@ -57,12 +83,25 @@ while running:
     # move enemy down (fall from top to bottom)
     obstacle_y += obstacle_speed
 
-    # check for collision
+    # move shield down (fall from top to bottom)
+    if shield_active:
+        shield_y += shield_speed
+
+    # check for collision with obstacle
     player_rect = pygame.Rect(player_x, player_y, player_width, player_height)
     obstacle_rect = pygame.Rect(obstacle_x, obstacle_y, obstacle_width, obstacle_height)
 
-    if player_rect.colliderect(obstacle_rect):
-        running = False  # End the game on collision
+    if player_rect.colliderect(obstacle_rect) and immunity == False:
+        lives -= 1
+        if lives == 0:
+            running = False  # End the game on collision
+        immunity = True
+
+    # check for shield collision with player
+    shield_rect = pygame.Rect(shield_x, shield_y, shield_radius * 2, shield_radius * 2)
+    if player_rect.colliderect(shield_rect):
+        immunity = True
+        shield_active = False  # Remove the shield once collected
 
     # update the score
     score += 1
@@ -75,15 +114,26 @@ while running:
     screen.fill(WHITE)
 
     # Draw the player (green rectangle)
-    pygame.draw.rect(screen, GREEN, player_rect)
+    if immunity == True:
+        pygame.draw.rect(screen, BLUE, player_rect)
+    else:
+        pygame.draw.rect(screen, GREEN, player_rect)
 
     # Draw the enemy (red rectangle)
     pygame.draw.rect(screen, RED, obstacle_rect)
+
+    # Draw the shield (light blue circle)
+    if shield_active:
+        pygame.draw.circle(screen, LIGHT_BLUE, (shield_x + shield_radius, shield_y + shield_radius), shield_radius)
 
     # display score
     font = pygame.font.Font(None, 36)
     score_text = font.render(f"Score: {score}", True, BLACK)
     screen.blit(score_text, (10, 10))
+
+    # display lives
+    lives_text = font.render(f"Lives: {lives}", True, BLACK)
+    screen.blit(lives_text, (10, 35))
 
     # display game over screen if player lost or score reached 5000
     if not running:
@@ -97,6 +147,10 @@ while running:
     if obstacle_y > HEIGHT:
         obstacle_y = -obstacle_height  # Reset to top of screen
         obstacle_x = random.choice([0, 250, 500])  # Randomize X position in one of the three areas
+
+    # Reset shield position if it falls off the screen
+    if shield_y > HEIGHT:
+        shield_active = False  # Deactivate shield once it falls off the screen
 
     clock.tick(FPS)
 
