@@ -33,7 +33,7 @@ player_speed = 10
 obstacle_width, obstacle_height = 250, 250  # Size of the obstacle (as a rectangle)
 obstacle_x = random.choice([0, 250, 500])  # Randomize spawn in one of the three middle positions
 obstacle_y = -obstacle_height  # Start above the screen (negative Y to make it fall down)
-obstacle_speed = 20  # Speed at which the enemy falls down
+obstacle_speed = 10  # Initial speed at which the enemy falls down
 
 # shield (boost) variables
 shield_radius = 25
@@ -41,6 +41,7 @@ shield_x = random.choice([100, 350, 600])  # Randomize spawn in one of the three
 shield_y = -shield_radius  # Start above the screen (negative Y to make it fall down)
 shield_speed = 5
 shield_active = False
+shield_time = 180
 
 # score
 score = 0
@@ -48,6 +49,9 @@ score = 0
 # game loop
 running = True
 clock = pygame.time.Clock()
+
+# previous_score variable to track score changes
+previous_score = 0
 
 while running:
     for event in pygame.event.get():
@@ -62,11 +66,11 @@ while running:
 
     # boosts in game to help player
     if not shield_active:
-        if random.random() < 0.1:
-            shield_x = random.choice([100, 350, 600])  # Randomize spawn position
-            shield_y = -shield_radius  # Reset to top
-            shield_active = True  # Shield is now active and falling down
-
+        if random.random() < 0.001:
+            shield_x = random.choice([100, 350, 600])  
+            shield_y = -shield_radius  
+            shield_active = True 
+            
     # player input (left/right movement now)
     keys = pygame.key.get_pressed()
     if keys[pygame.K_LEFT]:  # Move player left
@@ -105,6 +109,11 @@ while running:
 
     # update the score
     score += 1
+
+    # Increase the obstacle speed when the score reaches a multiple of 1000
+    if score // 1000 > previous_score // 1000:
+        obstacle_speed += 5  # Increase the obstacle speed by 2 for every 1000 points
+        previous_score = score  # Update the previous score for next check
 
     # check if the score reaches 5000 and end the game if it does
     if score >= 5000:
