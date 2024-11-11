@@ -20,9 +20,8 @@ SCREEN_HEIGHT = 400
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption('Snake Game')
 
-# Define the snake block size and speed
+# Define the snake block size
 BLOCK_SIZE = 20
-SNAKE_SPEED = 15
 
 # Load the background image and scale it to fit the screen
 background_image = pygame.transform.scale(pygame.image.load("floorground.jpg"), (SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -53,6 +52,9 @@ def message(msg, color):
 def gameLoop():
     game_over = False
     game_close = False
+
+    # Initial speed of the snake
+    SNAKE_SPEED = 15
 
     # Initial position of the snake
     x1 = SCREEN_WIDTH / 2
@@ -140,7 +142,8 @@ def gameLoop():
             foodx = round(random.randrange(0, SCREEN_WIDTH - BLOCK_SIZE) / BLOCK_SIZE) * BLOCK_SIZE
             foody = round(random.randrange(0, SCREEN_HEIGHT - BLOCK_SIZE) / BLOCK_SIZE) * BLOCK_SIZE
             Length_of_snake += 1
-
+            SNAKE_SPEED += 1  # Increase the snake speed by 1
+            
         # Set the speed of the game
         pygame.time.Clock().tick(SNAKE_SPEED)
 
