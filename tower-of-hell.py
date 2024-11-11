@@ -34,7 +34,10 @@ platforms = [
     (275, 400, 150, 10),
     (111, 369, 150, 10),
     (111, 309, 150, 10),
-    (280, 270, 340, 10)
+    (280, 270, 340, 10),
+    (575, 190, 50, 10),
+    (525, 130, 50, 10),
+    (575, 80, 50, 10),
 ]
 
 walls = [(-30, -20, 50, 1000), (620, -20, 50, 1000)]
@@ -110,13 +113,12 @@ while running:
                 print("Game Over!")
                 time.sleep(0.5)
 
-        if mario_y > HEIGHT + 30 and not death:
+        if mario_y > HEIGHT + 30:
             pygame.mixer.music.stop()
             death_animation = True
-            death_velocity = 0
+            # death_velocity = -25
             death_sound.play()
             print("Game Over!")
-            time.sleep(0.5)
 
     else:
         death_velocity += gravity
@@ -124,9 +126,9 @@ while running:
 
         mario_rect = pygame.Rect(mario_x, mario_y, 15, 25)
 
-        if mario_y > HEIGHT + 30:
+        if mario_y > HEIGHT + 100:
             pygame.time.delay(int(death_sound.get_length() * 1000))   
-            running = False  # End the game loop after death animation
+            running = False
 
     # DRAWING
     screen.fill((36, 40, 64))
@@ -148,10 +150,6 @@ while running:
     pygame.draw.rect(screen, (247, 232, 119), (mario_x + 2.5, mario_y - 10, 10, 10))
     pygame.draw.rect(screen, (247, 232, 119), (mario_x + 2, mario_y + 15, 4, 10))
     pygame.draw.rect(screen, (247, 232, 119), (mario_x + 9, mario_y + 15, 4, 10))
-
-    # Example red killbricks
-    for x in range(300, 600, 75):
-        pygame.draw.rect(screen, (255, 0, 0), (x, 255, 15, 15))
 
     # Refresh the display
     pygame.display.flip()
