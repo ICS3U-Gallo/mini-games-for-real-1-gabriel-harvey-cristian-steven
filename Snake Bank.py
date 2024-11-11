@@ -10,7 +10,6 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GREEN = (84, 214, 105)
 GREY = (101, 107, 102)
-BLUE = (50, 153, 213)
 RED = (156, 11, 11)
 
 # Define the screen dimensions
@@ -24,6 +23,9 @@ pygame.display.set_caption('Snake Game')
 # Define the snake block size and speed
 BLOCK_SIZE = 20
 SNAKE_SPEED = 15
+
+# Load the background image and scale it to fit the screen
+background_image = pygame.transform.scale(pygame.image.load("floorground.jpg"), (SCREEN_WIDTH, SCREEN_HEIGHT))
 
 # Set the font for the score
 font_style = pygame.font.SysFont("bahnschrift", 25)
@@ -70,7 +72,7 @@ def gameLoop():
     while not game_over:
 
         while game_close:
-            screen.fill(BLUE)
+            screen.blit(background_image, (0, 0))  # Draw the background image
             message("You Lost! Press Q-Quit or C-Play Again", RED)
             Your_score(Length_of_snake - 1)
             pygame.display.update()
@@ -107,7 +109,7 @@ def gameLoop():
 
         x1 += x1_change
         y1 += y1_change
-        screen.fill(BLUE)
+        screen.blit(background_image, (0, 0))  # Draw the background image each frame
 
         # Draw the food
         pygame.draw.rect(screen, GREEN, [foodx, foody, BLOCK_SIZE, BLOCK_SIZE])
