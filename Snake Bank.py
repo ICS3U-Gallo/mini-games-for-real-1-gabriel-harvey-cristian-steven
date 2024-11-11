@@ -1,5 +1,3 @@
-#SNAKE GAME TEMPLATE
-
 import pygame
 import time
 import random
@@ -36,10 +34,13 @@ def Your_score(score):
     value = score_font.render("Cash collected: $" + str(score), True, WHITE)
     screen.blit(value, [0, 0])
 
-# Function to draw the snake
+# Function to draw the snake with a different color for the head
 def our_snake(block_size, snake_list):
-    for x in snake_list:
-        pygame.draw.rect(screen, GREY, [x[0], x[1], block_size, block_size])
+    for index, x in enumerate(snake_list):
+        if index == len(snake_list) - 1:  # The head is the last element in the list
+            pygame.draw.rect(screen, BLACK, [x[0], x[1], block_size, block_size])  # Head color
+        else:
+            pygame.draw.rect(screen, GREY, [x[0], x[1], block_size, block_size])  # Body color
 
 # Function to display messages
 def message(msg, color):
