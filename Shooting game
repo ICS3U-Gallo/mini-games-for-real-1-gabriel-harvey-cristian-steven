@@ -1,4 +1,5 @@
 import pygame
+import math
 
 pygame.init()
 
@@ -16,13 +17,25 @@ player_x = 50  # Player positioned on the left side
 player_y = screen_height // 2
 player_speed = 5
 
+bullet_speed = 10
+bullets = []
+
 running = True
 while running:
-    screen.fill(black)  # Fill the screen with black
-
+    screen.fill(black)  
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+
+for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            # Fire a bullet towards the mouse position
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+            angle = math.atan2(mouse_y - player_y, mouse_x - player_x)
+            bullets.append({'x': player_x + player_width // 2, 'y': player_y, 'angle': angle})
+
 
     keys = pygame.key.get_pressed()
     if keys[pygame.K_UP] and player_y > 0:
@@ -30,8 +43,16 @@ while running:
     if keys[pygame.K_DOWN] and player_y < screen_height - player_height:
         player_y += player_speed
 
-    pygame.draw.rect(screen, green, (player_x, player_y, player_width, player_height))
+for bullet in bullets:
+        bullet['x'] += bullet_speed * math.cos(bullet['angle'])
+        bullet['y'] += bullet_speed * math.sin(bullet['angle'])
+    bullets = [bullet for bullet in bullets if 0 <= bullet['x'] <= screen_width and 0 <= bullet['y'] <= screen_height]
 
+    pygame.draw.rect(screen, green, (player_x, player_y, player_width, player_height))
+    for bullet in bullets:
+        pygame.draw.circle(screen, (255, 0, 0), (int(bullet['x']), int(bullet['y'])), 3)
+
+    pygame.display.flip()
     pygame.display.flip()
 
 pygame.quit()
