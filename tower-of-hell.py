@@ -9,7 +9,6 @@ HEIGHT = 480
 SIZE = (WIDTH, HEIGHT)
 
 screen = pygame.display.set_mode(SIZE)
-pygame.display.set_caption("Mario Tower Obstacle Course")
 clock = pygame.time.Clock()
 
 # Load sounds
@@ -27,8 +26,8 @@ velocity_y = 0
 gravity = 5
 ground = False
 death = False
-death_animation = False  # New variable to track death animation
-death_velocity = 0       # Velocity during death animation
+death_animation = False
+death_velocity = 0
 
 platforms = [
     (470, 430, 150, 10),
