@@ -16,9 +16,7 @@ death_sound = pygame.mixer.Sound("game_over.mp3")
 pygame.mixer.music.load("escape.mp3")
 pygame.mixer.music.play(-1)
 
-# ---------------------------
 # Initialize global variables
-
 mario_x = 500
 mario_y = 400
 mario_speed = 10
@@ -28,47 +26,57 @@ ground = False
 death = False
 death_animation = False
 death_velocity = 0
+level = 1  # Starting level
 
-platforms = [
-    (470, 430, 150, 10),
-    (275, 400, 150, 10),
-    (111, 369, 150, 10),
-    (111, 309, 150, 10),
-    (280, 270, 340, 10),
-    (575, 190, 50, 10),
-    (525, 130, 50, 10),
-    (575, 80, 50, 10),
-]
+# Define platforms, walls, and killbricks for each level
+def load_stage(level):
+    global platforms, killbricks, walls, mario_y
+    if level == 1:
+        platforms = [
+            (470, 430, 150, 10),
+            (275, 400, 150, 10),
+            (111, 369, 150, 10),
+            (111, 309, 150, 10),
+            (280, 270, 340, 10),
+            (575, 190, 50, 10),
+            (525, 130, 50, 10),
+            (575, 80, 50, 10),
+            (575, 30, 50, 10)
+        ]
+        killbricks = [
+            (340, 380.5, 20, 20),
+            (241, 289.9, 20, 20),
+            (111, 289.9, 20, 20)
+        ] + [(x, 255, 15, 15) for x in range(300, 600, 75)]
+        walls = [(-30, -20, 50, 1000), (620, -20, 50, 1000)]
+    elif level == 2:
+        platforms = [
+            (50, 400, 150, 10),
+            (200, 350, 150, 10),
+            (350, 300, 150, 10),
+            (500, 250, 150, 10)
+        ]
+        killbricks = [
+            (100, 380, 20, 20),
+            (300, 340, 20, 20),
+            (450, 280, 20, 20)
+        ]
+        walls = [(-30, -20, 50, 1000), (620, -20, 50, 1000)]
 
-walls = [(-30, -20, 50, 1000), (620, -20, 50, 1000)]
+# Load the initial stage
+load_stage(level)
 
-killbricks = [
-    (340, 380.5, 20, 20),
-    (241, 289.9, 20, 20),
-    (111, 289.9, 20, 20)
-] + [(x, 255, 15, 15) for x in range(300, 600, 75)]
-
-# ---------------------------
-mario_rect = pygame.Rect(mario_x, mario_y, 15, 25)
-
-# Initial collision check to see if Mario starts on a platform
-for platform in platforms:
-    platform_rect = pygame.Rect(platform)  # Hitbox for the obby
-    if mario_rect.colliderect(platform_rect):
-        ground = True  # If Mario is touching a platform, he's on it
-        mario_y = platform_rect.top - mario_rect.height  # Mario is now on top of the platform
-        break  # Stop checking once a collision is detected
-
+# Main game loop
 running = True
 while running:
-    # EVENT HANDLING
+    # Event handling
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
             print(event)
 
-    # GAME STATE UPDATES
+    # Game state updates
     if not death_animation and not death:
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT]:
@@ -116,9 +124,13 @@ while running:
         if mario_y > HEIGHT + 30:
             pygame.mixer.music.stop()
             death_animation = True
-            # death_velocity = -25
             death_sound.play()
             print("Game Over!")
+
+        # Check if Mario goes above the screen
+        if mario_y < 0:
+            level += 1  # Go to the next level
+            load_stage(level)  # Load the next stage
 
     else:
         death_velocity += gravity
@@ -130,7 +142,7 @@ while running:
             pygame.time.delay(int(death_sound.get_length() * 1000))   
             running = False
 
-    # DRAWING
+    # Drawing
     screen.fill((36, 40, 64))
 
     # Draw killbricks
@@ -141,7 +153,7 @@ while running:
     for platform in platforms:
         pygame.draw.rect(screen, (64, 64, 64), platform)
 
-    # Draw towers walls
+    # Draw tower walls
     for wall in walls:
         pygame.draw.rect(screen, (74, 74, 74), wall)
 
@@ -155,5 +167,4 @@ while running:
     pygame.display.flip()
     clock.tick(30)
 
-# ---------------------------
 pygame.quit()
