@@ -1,5 +1,6 @@
 import pygame
 import math
+import random
 
 pygame.init()
 
@@ -10,6 +11,15 @@ pygame.display.set_caption("Shooter Game")
 
 black = (0, 0, 0)
 green = (0, 255, 0)
+
+enemy_width = 20
+enemy_height = 40
+enemies = [{'x': screen_width, 'y': random.randint(0, screen_height - enemy_height)} for _ in range(3)]
+enemy_speed = 1.5
+
+running = True
+while running:
+    screen.fill(black)
 
 player_width = 20
 player_height = 40
@@ -26,6 +36,12 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+
+   for enemy in enemies:
+        enemy['x'] -= enemy_speed
+        if enemy['x'] < -enemy_width:
+            enemies.remove(enemy)
+            enemies.append({'x': screen_width, 'y': random.randint(0, screen_height - enemy_height)})
 
 for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -53,6 +69,13 @@ for bullet in bullets:
         pygame.draw.circle(screen, (255, 0, 0), (int(bullet['x']), int(bullet['y'])), 3)
 
     pygame.display.flip()
+
+ pygame.draw.rect(screen, green, (player_x, player_y, player_width, player_height))
+    for bullet in bullets:
+        pygame.draw.circle(screen, (255, 0, 0), (int(bullet['x']), int(bullet['y'])), 3)
+    for enemy in enemies:
+        pygame.draw.rect(screen, (255, 255, 255), (enemy['x'], enemy['y'], enemy_width, enemy_height))
+
     pygame.display.flip()
 
 pygame.quit()
