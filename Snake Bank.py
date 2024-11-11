@@ -30,10 +30,13 @@ background_image = pygame.transform.scale(pygame.image.load("floorground.jpg"), 
 font_style = pygame.font.SysFont("bahnschrift", 25)
 score_font = pygame.font.SysFont("comicsansms", 35)
 
-# Function to display the score
+# Function to display the score with a black background box
 def Your_score(score):
+    # Draw a black rectangle at the top for the score background
+    pygame.draw.rect(screen, BLACK, [0, 0, SCREEN_WIDTH, 40])
+    # Render and display the score text
     value = score_font.render("Cash collected: $" + str(score), True, WHITE)
-    screen.blit(value, [0, 0])
+    screen.blit(value, [10, 5])
 
 # Function to draw the snake with a different color for the head
 def our_snake(block_size, snake_list):
@@ -110,16 +113,13 @@ def gameLoop():
             game_close = True
 
         x1 += x1_change
-        y1 += y1_change
         screen.blit(background_image, (0, 0))  # Draw the background image each frame
 
         # Draw the food
         pygame.draw.rect(screen, GREEN, [foodx, foody, BLOCK_SIZE, BLOCK_SIZE])
 
         # Update the snake's position
-        snake_Head = []
-        snake_Head.append(x1)
-        snake_Head.append(y1)
+        snake_Head = [x1, y1]
         snake_List.append(snake_Head)
         if len(snake_List) > Length_of_snake:
             del snake_List[0]
@@ -132,7 +132,7 @@ def gameLoop():
         # Draw the snake
         our_snake(BLOCK_SIZE, snake_List)
 
-        # Display the score
+        # Display the score with the black background
         Your_score(Length_of_snake - 1)
 
         pygame.display.update()
