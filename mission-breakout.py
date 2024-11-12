@@ -28,7 +28,7 @@ death_animation = False
 death_velocity = 0
 mario_x = mario_spawn_x
 mario_y = mario_spawn_y
-level = 2  # Starting level
+level = 1  # Starting level
 
 # Define moving platform variables (initialized only if level 2 is loaded)
 moving_platform = None
