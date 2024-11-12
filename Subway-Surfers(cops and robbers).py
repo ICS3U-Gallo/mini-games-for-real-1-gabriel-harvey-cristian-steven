@@ -1,5 +1,6 @@
 import pygame
 import random
+import time  
 
 pygame.init()
 
@@ -9,7 +10,6 @@ FPS = 60
 immunity = False
 immunityTime = 0
 allowedImmunity = 150
-lives = 3
 
 # colors
 WHITE = (255, 255, 255)
@@ -18,45 +18,76 @@ GREEN = (0, 255, 0)
 BLACK = (0, 0, 0)
 BLUE = (0, 0, 255)
 LIGHT_BLUE = (173, 216, 230)
+ROAD_COLOR = (50, 50, 50)  
+LINE_COLOR = (255, 255, 255)  
 
 # Create the game window
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Escape the Cops")
 
 # player variables
-player_width, player_height = 50, 50  # Size of the player (as a rectangle)
+player_width, player_height = 50, 50  
 player_x = WIDTH // 2
 player_y = HEIGHT - GROUND_HEIGHT - player_height
 player_speed = 10
 
 # enemy (obstacle) variables
-obstacle_width, obstacle_height = 250, 250  # Size of the obstacle (as a rectangle)
-obstacle_x = random.choice([0, 250, 500])  # Randomize spawn in one of the three middle positions
-obstacle_y = -obstacle_height  # Start above the screen (negative Y to make it fall down)
-obstacle_speed = 10  # Initial speed at which the enemy falls down
+obstacle_width, obstacle_height = 250, 250  
+obstacle_x = random.choice([0, 250, 500])  
+obstacle_y = -obstacle_height  
+obstacle_speed = 10  
 
-# shield (boost) variables
-shield_radius = 25
-shield_x = random.choice([100, 350, 600])  # Randomize spawn in one of the three middle positions
-shield_y = -shield_radius  # Start above the screen (negative Y to make it fall down)
-shield_speed = 5
-shield_active = False
-shield_time = 180
+# Shield variables
+shield_radius = 30  # Shield size
+shield_x = random.choice([100, 350, 600])  
+shield_y = -shield_radius  
+shield_speed = 5  
+Shieldimmunity = False  
+shield_immunity_start_time = 0  
+shield_immunity_duration = 3  
 
-# score
+# Player immunity variables (for hitting obstacles)
+immunity_start_time = 0
+immunity_duration = 3  
+allowedImmunity = 150  
+
+# score and lives
 score = 0
+lives = 3  
+previous_score = 0
 
 # game loop
 running = True
 clock = pygame.time.Clock()
 
-# previous_score variable to track score changes
-previous_score = 0
+# Draw the road vertically
+def draw_road():
+    lane_width = WIDTH // 3  
+
+    # Draw the 3 lanes (dark grey)
+    for i in range(3):
+        pygame.draw.rect(screen, ROAD_COLOR, (i * lane_width, 0, lane_width, HEIGHT - GROUND_HEIGHT))
+
+    # Draw dashed lines (vertical lane markings)
+    line_spacing = 30
+    line_width = 5  
+    for i in range(0, HEIGHT - GROUND_HEIGHT, line_spacing * 2):  
+        # Drawing vertical dashed lines in the middle of each lane
+        pygame.draw.rect(screen, LINE_COLOR, (lane_width - line_width // 2, i + line_spacing, line_width, line_width))  
+        pygame.draw.rect(screen, LINE_COLOR, (lane_width * 2 - line_width // 2, i + line_spacing, line_width, line_width))  
 
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+
+    # Shield immunity logic: Disable shield immunity after the set duration
+    if Shieldimmunity and time.time() - shield_immunity_start_time >= shield_immunity_duration:
+        Shieldimmunity = False  
+
+    # Immunity logic: Disable immunity after the set duration (obstacle-induced immunity)
+    if immunity and time.time() - immunity_start_time >= immunity_duration:
+        immunity = False  
 
     if immunity == True and immunityTime >= allowedImmunity:
         immunity = False
@@ -64,75 +95,78 @@ while running:
     elif immunity == True and immunityTime < allowedImmunity:
         immunityTime += 1
 
-    # boosts in game to help player
-    if not shield_active:
-        if random.random() < 0.001:
-            shield_x = random.choice([100, 350, 600])  
-            shield_y = -shield_radius  
-            shield_active = True 
-            
     # player input (left/right movement now)
     keys = pygame.key.get_pressed()
-    if keys[pygame.K_LEFT]:  # Move player left
+    if keys[pygame.K_LEFT]:  
         player_x -= player_speed
-    if keys[pygame.K_RIGHT]:  # Move player right
+    if keys[pygame.K_RIGHT]:  
         player_x += player_speed
 
     # Ensure player doesn't move off the screen
     if player_x < 0:
-        player_x = 0  # Prevent moving past the left edge
+        player_x = 0  
     if player_x > WIDTH - player_width:
-        player_x = WIDTH - player_width  # Prevent moving past the right edge
+        player_x = WIDTH - player_width  
 
     # move enemy down (fall from top to bottom)
     obstacle_y += obstacle_speed
 
     # move shield down (fall from top to bottom)
-    if shield_active:
+    if not Shieldimmunity:
         shield_y += shield_speed
 
     # check for collision with obstacle
     player_rect = pygame.Rect(player_x, player_y, player_width, player_height)
     obstacle_rect = pygame.Rect(obstacle_x, obstacle_y, obstacle_width, obstacle_height)
 
-    if player_rect.colliderect(obstacle_rect) and immunity == False:
-        lives -= 1
-        if lives == 0:
-            running = False  # End the game on collision
-        immunity = True
+    # Check for obstacle collision and apply temporary immunity
+    if player_rect.colliderect(obstacle_rect) and not Shieldimmunity:
+        if not immunity:  
+            lives -= 1
+            immunity = True
+            immunity_start_time = time.time() 
+            if lives == 0:
+                running = False  
+        obstacle_y = -obstacle_height  
 
     # check for shield collision with player
     shield_rect = pygame.Rect(shield_x, shield_y, shield_radius * 2, shield_radius * 2)
     if player_rect.colliderect(shield_rect):
-        immunity = True
-        shield_active = False  # Remove the shield once collected
+        Shieldimmunity = True
+        shield_immunity_start_time = time.time()  
+        shield_y = -shield_radius  
 
     # update the score
     score += 1
 
     # Increase the obstacle speed when the score reaches a multiple of 1000
     if score // 1000 > previous_score // 1000:
-        obstacle_speed += 5  # Increase the obstacle speed by 2 for every 1000 points
-        previous_score = score  # Update the previous score for next check
+        obstacle_speed += 5  
+        previous_score = score  
 
     # check if the score reaches 5000 and end the game if it does
     if score >= 5000:
-        running = False  # End the game if score reaches 5000
+        running = False 
 
     # draw
-    screen.fill(WHITE)
+    screen.fill(ROAD_COLOR)
 
-    # Draw the player (green rectangle)
-    if immunity == True:
-        pygame.draw.rect(screen, BLUE, player_rect)
+    # Draw the road
+    draw_road()
+
+    # Draw the player (green rectangle or blue if immune from shield, red if immune from obstacle)
+    if Shieldimmunity:
+        pygame.draw.rect(screen, BLUE, player_rect)  
+    elif immunity:  
+        pygame.draw.rect(screen, RED, player_rect)
     else:
-        pygame.draw.rect(screen, GREEN, player_rect)
+        pygame.draw.rect(screen, GREEN, player_rect)  
 
     # Draw the enemy (red rectangle)
     pygame.draw.rect(screen, RED, obstacle_rect)
 
     # Draw the shield (light blue circle)
-    if shield_active:
+    if not Shieldimmunity and shield_y > 0:  
         pygame.draw.circle(screen, LIGHT_BLUE, (shield_x + shield_radius, shield_y + shield_radius), shield_radius)
 
     # display score
@@ -154,12 +188,13 @@ while running:
 
     # Reset enemy position if it falls off the screen
     if obstacle_y > HEIGHT:
-        obstacle_y = -obstacle_height  # Reset to top of screen
-        obstacle_x = random.choice([0, 250, 500])  # Randomize X position in one of the three areas
+        obstacle_y = -obstacle_height 
+        obstacle_x = random.choice([0, 250, 500])  
 
     # Reset shield position if it falls off the screen
     if shield_y > HEIGHT:
-        shield_active = False  # Deactivate shield once it falls off the screen
+        shield_y = -shield_radius  
+        shield_x = random.choice([100, 350, 600])  
 
     clock.tick(FPS)
 
