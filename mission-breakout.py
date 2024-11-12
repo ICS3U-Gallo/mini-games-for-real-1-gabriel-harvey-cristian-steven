@@ -17,8 +17,8 @@ pygame.mixer.music.load("escape.mp3")
 pygame.mixer.music.play(-1)
 
 # Initialize global variables
-mario_x = 500
-mario_y = 400
+mario_spawn_x = 500
+mario_spawn_y = 400
 mario_speed = 10
 velocity_y = 0
 gravity = 5
@@ -26,11 +26,17 @@ ground = False
 death = False
 death_animation = False
 death_velocity = 0
-level = 1  # Starting level
+mario_x = mario_spawn_x
+mario_y = mario_spawn_y
+level = 2  # Starting level
+
+# Define moving platform variables (initialized only if level 2 is loaded)
+moving_platform = None
+moving_speed = 5
 
 # Define platforms, walls, and killbricks for each level
 def load_stage(level):
-    global platforms, killbricks, walls, mario_y
+    global platforms, killbricks, walls, mario_y, moving_platform
     if level == 1:
         platforms = [
             (470, 430, 150, 10),
@@ -49,19 +55,22 @@ def load_stage(level):
             (111, 289.9, 20, 20)
         ] + [(x, 255, 15, 15) for x in range(300, 600, 75)]
         walls = [(-30, -20, 50, 1000), (620, -20, 50, 1000)]
+        moving_platform = None  # No moving platform in level 1
     elif level == 2:
         platforms = [
-            (50, 400, 150, 10),
-            (200, 350, 150, 10),
-            (350, 300, 150, 10),
-            (500, 250, 150, 10)
-        ]
+            (15, 430, 615, 10),
+            (450, 400, 30, 40),
+            (400, 340, 20, 20),
+            (100, 0, 10, 100)
+        ] + [(x, 320, 15, 15) for x in range(100, 400, 75)]
         killbricks = [
-            (100, 380, 20, 20),
-            (300, 340, 20, 20),
-            (450, 280, 20, 20)
+            (5, 420, 450, 10),
+            (5, 0, 100, 10)
         ]
         walls = [(-30, -20, 50, 1000), (620, -20, 50, 1000)]
+        moving_platform = pygame.Rect(15, 400, 50, 10)  # now its there
+    mario_x = mario_spawn_x
+    mario_y = mario_spawn_y
 
 # Load the initial stage
 load_stage(level)
@@ -95,7 +104,7 @@ while running:
         mario_rect = pygame.Rect(mario_x, mario_y, 15, 25)
 
         ground = False  # Assume Mario is in the air
-        for platform in platforms:
+        for platform in platforms + ([moving_platform] if moving_platform else []):
             platform_rect = pygame.Rect(platform)
             if mario_rect.colliderect(platform_rect) and velocity_y >= 0:
                 mario_y = platform_rect.top - mario_rect.height 
@@ -142,6 +151,12 @@ while running:
             pygame.time.delay(int(death_sound.get_length() * 1000))   
             running = False
 
+    # Move the moving platform upwards and reset when it goes above the screen (only for level 2)
+    if level == 2 and moving_platform:
+        moving_platform.y -= moving_speed
+        if moving_platform.y < -moving_platform.height:  # Reset to the bottom
+            moving_platform.y = HEIGHT
+
     # Drawing
     screen.fill((36, 40, 64))
 
@@ -152,6 +167,13 @@ while running:
     # Draw platforms
     for platform in platforms:
         pygame.draw.rect(screen, (64, 64, 64), platform)
+
+    # Draw moving platform (only for level 2)
+    if level == 2 and moving_platform:
+        pygame.draw.rect(screen, (64, 64, 64), moving_platform)
+    
+    if death_animation == True:
+        moving_speed = 0
 
     # Draw tower walls
     for wall in walls:
