@@ -7,9 +7,7 @@ pygame.init()
 
 # Define the colors
 WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-GREEN = (84, 214, 105)
-GREY = (101, 107, 102)
+BROWN = (74, 58, 43)
 RED = (156, 11, 11)
 
 # Define the screen dimensions
@@ -21,30 +19,29 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption('Snake Game')
 
 # Define the snake block size
-BLOCK_SIZE = 20
+BLOCK_SIZE = 40
 
-# Load the background image and scale it to fit the screen
+# Load images and scale to fit
 background_image = pygame.transform.scale(pygame.image.load("floorground.jpg"), (SCREEN_WIDTH, SCREEN_HEIGHT))
+food_image = pygame.transform.scale(pygame.image.load("cashmoney.jpg"), (BLOCK_SIZE, BLOCK_SIZE))
+head_image = pygame.transform.scale(pygame.image.load("robber.jpg"), (BLOCK_SIZE, BLOCK_SIZE))
 
 # Set the font for the score
 font_style = pygame.font.SysFont("bahnschrift", 25)
 score_font = pygame.font.SysFont("comicsansms", 35)
 
-# Function to display the score with a black background box
+# Function to display the score
 def Your_score(score):
-    # Draw a black rectangle at the top for the score background
-    pygame.draw.rect(screen, BLACK, [0, 0, SCREEN_WIDTH, 40])
-    # Render and display the score text
     value = score_font.render("Cash collected: $" + str(score), True, WHITE)
-    screen.blit(value, [10, 5])
+    screen.blit(value, [0, 0])
 
-# Function to draw the snake with a different color for the head
+# Function to draw the snake with an image for the head
 def our_snake(block_size, snake_list):
     for index, x in enumerate(snake_list):
         if index == len(snake_list) - 1:  # The head is the last element in the list
-            pygame.draw.rect(screen, BLACK, [x[0], x[1], block_size, block_size])  # Head color
+            screen.blit(head_image, (x[0], x[1]))  # Draw the head with the image
         else:
-            pygame.draw.rect(screen, GREY, [x[0], x[1], block_size, block_size])  # Body color
+            pygame.draw.rect(screen, BROWN, [x[0], x[1], block_size, block_size])  # Draw the body blocks
 
 # Function to display messages
 def message(msg, color):
@@ -113,13 +110,16 @@ def gameLoop():
             game_close = True
 
         x1 += x1_change
+        y1 += y1_change
         screen.blit(background_image, (0, 0))  # Draw the background image each frame
 
-        # Draw the food
-        pygame.draw.rect(screen, GREEN, [foodx, foody, BLOCK_SIZE, BLOCK_SIZE])
+        # Draw the food image instead of a rectangle
+        screen.blit(food_image, (foodx, foody))
 
         # Update the snake's position
-        snake_Head = [x1, y1]
+        snake_Head = []
+        snake_Head.append(x1)
+        snake_Head.append(y1)
         snake_List.append(snake_Head)
         if len(snake_List) > Length_of_snake:
             del snake_List[0]
@@ -132,7 +132,7 @@ def gameLoop():
         # Draw the snake
         our_snake(BLOCK_SIZE, snake_List)
 
-        # Display the score with the black background
+        # Display the score
         Your_score(Length_of_snake - 1)
 
         pygame.display.update()
