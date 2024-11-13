@@ -28,15 +28,16 @@ death_animation = False
 death_velocity = 0
 mario_x = mario_spawn_x
 mario_y = mario_spawn_y
-level = 1  # Starting level
-
-# Define moving platform variables (initialized only if level 2 is loaded)
+level = 1
+sweeping_killbrick = None  # Initialize to None by default
+sweeping_speed = 10
+sweeping_direction = 1 
 moving_platform = None
 moving_speed = 5
 
 # Define platforms, walls, and killbricks for each level
 def load_stage(level):
-    global platforms, killbricks, walls, mario_y, moving_platform
+    global platforms, killbricks, walls, mario_y, moving_platform, sweeping_killbrick
     if level == 1:
         platforms = [
             (470, 430, 150, 10),
@@ -56,19 +57,31 @@ def load_stage(level):
         ] + [(x, 255, 15, 15) for x in range(300, 600, 75)]
         walls = [(-30, -20, 50, 1000), (620, -20, 50, 1000)]
         moving_platform = None  # No moving platform in level 1
+        sweeping_killbrick = None  # No sweeping killbrick in level 1
     elif level == 2:
         platforms = [
             (15, 430, 615, 10),
             (450, 400, 30, 40),
             (400, 340, 20, 20),
-            (100, 0, 10, 100)
-        ] + [(x, 320, 15, 15) for x in range(100, 400, 75)]
+            (100, 0, 10, 100),
+            (100, 210, 10, 30),
+            (100, 375, 7.5, 60),
+            (100, 230, 550, 10),
+            (125, 210, 20, 20),
+            (550, 175, 100, 10),
+            (550, 100, 100, 10),
+            (550, 50, 100, 10),
+        ] + [(x-2, 320, 15, 15) for x in range(175, 350, 75)]
         killbricks = [
             (5, 420, 450, 10),
-            (5, 0, 100, 10)
+            (5, 0, 100, 10), 
+            (100, 100, 10, 10),
+            (100, 200, 10, 10),
+            (110, 220, 20, 10)
         ]
         walls = [(-30, -20, 50, 1000), (620, -20, 50, 1000)]
-        moving_platform = pygame.Rect(15, 400, 50, 10)  # now its there
+        moving_platform = pygame.Rect(15, 400, 50, 10)
+        sweeping_killbrick = pygame.Rect(200, 220, 50, 10)  # Only in level 2
     mario_x = mario_spawn_x
     mario_y = mario_spawn_y
 
@@ -78,7 +91,6 @@ load_stage(level)
 # Main game loop
 running = True
 while running:
-    # Event handling
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -130,16 +142,24 @@ while running:
                 print("Game Over!")
                 time.sleep(0.5)
 
+        if level == 2 and sweeping_killbrick:
+            sweeping_killbrick.x += sweeping_speed * sweeping_direction
+            if sweeping_killbrick.left <= 150 or sweeping_killbrick.right >= 610:
+                sweeping_direction *= -1
+
+        if sweeping_killbrick and mario_rect.colliderect(sweeping_killbrick):
+            pygame.mixer.music.stop()
+            death_animation = True
+            death_velocity = -25
+            death_sound.play()
+            print("Game Over!")
+            time.sleep(0.5)
+
         if mario_y > HEIGHT + 30:
             pygame.mixer.music.stop()
             death_animation = True
             death_sound.play()
             print("Game Over!")
-
-        # Check if Mario goes above the screen
-        if mario_y < 0:
-            level += 1  # Go to the next level
-            load_stage(level)  # Load the next stage
 
     else:
         death_velocity += gravity
@@ -151,12 +171,14 @@ while running:
             pygame.time.delay(int(death_sound.get_length() * 1000))   
             running = False
 
-    # Move the moving platform upwards and reset when it goes above the screen (only for level 2)
     if level == 2 and moving_platform:
         moving_platform.y -= moving_speed
-        if moving_platform.y < -moving_platform.height:  # Reset to the bottom
+        if moving_platform.y < -moving_platform.height:
             moving_platform.y = HEIGHT
 
+    if mario_y < 0:
+        level += 1
+        load_stage(level)
     # Drawing
     screen.fill((36, 40, 64))
 
@@ -164,22 +186,21 @@ while running:
     for kill in killbricks:
         pygame.draw.rect(screen, (255, 0, 0), kill)
 
-    # Draw platforms
     for platform in platforms:
         pygame.draw.rect(screen, (64, 64, 64), platform)
 
-    # Draw moving platform (only for level 2)
     if level == 2 and moving_platform:
         pygame.draw.rect(screen, (64, 64, 64), moving_platform)
-    
-    if death_animation == True:
+
+    if sweeping_killbrick:
+        pygame.draw.rect(screen, (255, 0, 0), sweeping_killbrick)
+
+    if death_animation:
         moving_speed = 0
 
-    # Draw tower walls
     for wall in walls:
         pygame.draw.rect(screen, (74, 74, 74), wall)
 
-    # Draw Mario
     pygame.draw.rect(screen, (66, 66, 66), (mario_x, mario_y, 15, 15))
     pygame.draw.rect(screen, (247, 232, 119), (mario_x + 2.5, mario_y - 10, 10, 10))
     pygame.draw.rect(screen, (247, 232, 119), (mario_x + 2, mario_y + 15, 4, 10))
