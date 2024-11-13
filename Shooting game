@@ -1,6 +1,7 @@
 import pygame
 import math
 import random
+import time
 
 pygame.init()
 
@@ -17,70 +18,104 @@ enemy_height = 40
 enemies = [{'x': screen_width, 'y': random.randint(0, screen_height - enemy_height)} for _ in range(3)]
 enemy_speed = 1.5
 
+enemy_bullets = []
+
 running = True
 while running:
-    screen.fill(black)
+import pygame
+import math
+import random
+import time
+
+pygame.init()
+
+screen_width = 800
+screen_height = 600
+screen = pygame.display.set_mode((screen_width, screen_height))
+pygame.display.set_caption("Shooter Game")
+
+black = (0, 0, 0)
+green = (0, 255, 0)
 
 player_width = 20
 player_height = 40
-player_x = 50  # Player positioned on the left side
+player_x = 50
 player_y = screen_height // 2
 player_speed = 5
 
 bullet_speed = 10
 bullets = []
 
+enemy_width = 20
+enemy_height = 40
+enemies = [{'x': screen_width, 'y': random.randint(0, screen_height - enemy_height), 'last_shot': time.time()} for _ in range(3)]
+enemy_speed = 1.5
+enemy_bullets = []
+
+score = 0
+font = pygame.font.Font(None, 36)
+
 running = True
 while running:
-    screen.fill(black)  
+    screen.fill(black)
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-
-   for enemy in enemies:
-        enemy['x'] -= enemy_speed
-        if enemy['x'] < -enemy_width:
-            enemies.remove(enemy)
-            enemies.append({'x': screen_width, 'y': random.randint(0, screen_height - enemy_height)})
-
-for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            # Fire a bullet towards the mouse position
             mouse_x, mouse_y = pygame.mouse.get_pos()
             angle = math.atan2(mouse_y - player_y, mouse_x - player_x)
             bullets.append({'x': player_x + player_width // 2, 'y': player_y, 'angle': angle})
-
 
     keys = pygame.key.get_pressed()
     if keys[pygame.K_UP] and player_y > 0:
         player_y -= player_speed
     if keys[pygame.K_DOWN] and player_y < screen_height - player_height:
         player_y += player_speed
-score = 0
-for bullet in bullets:
+
+    for bullet in bullets:
         bullet['x'] += bullet_speed * math.cos(bullet['angle'])
         bullet['y'] += bullet_speed * math.sin(bullet['angle'])
     bullets = [bullet for bullet in bullets if 0 <= bullet['x'] <= screen_width and 0 <= bullet['y'] <= screen_height]
 
+    for enemy in enemies:
+        enemy['x'] -= enemy_speed
+        if enemy['x'] < -enemy_width:
+            enemies.remove(enemy)
+            enemies.append({'x': screen_width, 'y': random.randint(0, screen_height - enemy_height), 'last_shot': time.time()})
+        
+        if time.time() - enemy['last_shot'] > 2:
+            angle = math.atan2(player_y - enemy['y'], player_x - enemy['x'])
+            enemy_bullets.append({'x': enemy['x'], 'y': enemy['y'], 'angle': angle})
+            enemy['last_shot'] = time.time()
+
+    for enemy_bullet in enemy_bullets:
+        enemy_bullet['x'] += bullet_speed * math.cos(enemy_bullet['angle'])
+        enemy_bullet['y'] += bullet_speed * math.sin(enemy_bullet['angle'])
+    enemy_bullets = [bullet for bullet in enemy_bullets if 0 <= bullet['x'] <= screen_width and 0 <= bullet['y'] <= screen_height]
+
+    for bullet in enemy_bullets:
+        if (player_x < bullet['x'] < player_x + player_width and
+            player_y < bullet['y'] < player_y + player_height):
+            print("You Lose!")
+            running = False
+
     pygame.draw.rect(screen, green, (player_x, player_y, player_width, player_height))
+
     for bullet in bullets:
         pygame.draw.circle(screen, (255, 0, 0), (int(bullet['x']), int(bullet['y'])), 3)
 
-    pygame.display.flip()
-
- pygame.draw.rect(screen, green, (player_x, player_y, player_width, player_height))
-    for bullet in bullets:
-        pygame.draw.circle(screen, (255, 0, 0), (int(bullet['x']), int(bullet['y'])), 3)
     for enemy in enemies:
         pygame.draw.rect(screen, (255, 255, 255), (enemy['x'], enemy['y'], enemy_width, enemy_height))
 
-    pygame.display.flip()
- font = pygame.font.Font(None, 36)
+    for enemy_bullet in enemy_bullets:
+        pygame.draw.circle(screen, (0, 0, 255), (int(enemy_bullet['x']), int(enemy_bullet['y'])), 3)
+
     score_text = font.render(f"Score: {score}", True, (255, 255, 255))
     screen.blit(score_text, (10, 10))
- 
+
+    pygame.display.flip()
+
 pygame.quit()
 
 
