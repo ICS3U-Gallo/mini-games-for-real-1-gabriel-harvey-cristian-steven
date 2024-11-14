@@ -48,7 +48,7 @@ shield_y = -shield_radius
 shield_speed = 5
 Shieldimmunity = False
 shield_immunity_start_time = 0
-shield_immunity_duration = 3
+shield_immunity_duration = 2.5
 shieldOnScreen = False
 shield_spawned = False
 
@@ -91,11 +91,13 @@ def draw_menu():
     start_text = font.render("Press ENTER to Start", True, WHITE)
     controls_text = font.render("Use LEFT/RIGHT Arrow to Move", True, WHITE)
     shield_text = font.render("The blue orb grants you a shield ", True, WHITE)
+    game_text = font.render("Goal is to reach 5000km", True, WHITE)
 
     screen.blit(title_text, (WIDTH // 2 - title_text.get_width() // 2, 100))
     screen.blit(start_text, (WIDTH // 2 - start_text.get_width() // 2, 250))
     screen.blit(controls_text, (WIDTH // 2 - controls_text.get_width() // 2, 300))
     screen.blit(shield_text, (WIDTH //2 - shield_text.get_width() // 2, 350))
+    screen.blit(game_text, (WIDTH // 2 - game_text.get_width() // 2, 400))
 
     pygame.display.flip()
 
@@ -114,16 +116,24 @@ def draw_game():
         pygame.draw.rect(screen, GREEN, player_rect)
 
     obstacle_rect = pygame.Rect(obstacle_x, obstacle_y, obstacle_width, obstacle_height)
-    pygame.draw.rect(screen, RED, obstacle_rect)
+    
+    # Draw car body
+    pygame.draw.rect(screen, BLUE, (obstacle_x, obstacle_y, 250, 250))
+    # Draw windows
+    pygame.draw.rect(screen, WHITE, (obstacle_x + 30, obstacle_y + 50, 80, 60))
+    pygame.draw.rect(screen, WHITE, (obstacle_x + 135, obstacle_y + 50, 80, 60))
+    # Draw wheels
+    pygame.draw.circle(screen, BLACK, (obstacle_x + 20, obstacle_y + 240), 15)
+    pygame.draw.circle(screen, BLACK, (obstacle_x + 230, obstacle_y + 240), 15)
 
     if shield_spawned:
         pygame.draw.circle(screen, LIGHT_BLUE, (shield_x + shield_radius, shield_y + shield_radius), shield_radius)
 
     font = pygame.font.Font(None, 36)
-    score_text = font.render(f"Score: {score}", True, BLACK)
+    score_text = font.render(f"Score: {score}", True, WHITE)
     screen.blit(score_text, (10, 10))
 
-    lives_text = font.render(f"Lives: {lives}", True, BLACK)
+    lives_text = font.render(f"Lives: {lives}", True, WHITE)
     screen.blit(lives_text, (10, 35))
 
     if not running:
@@ -146,6 +156,15 @@ def main():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+
+            # reset lives
+            if lives == 0:
+                lives = 3
+
+            #reset score
+            if game_state == STATE_MENU:
+                score = 0
+                obstacle_speed = 10
 
             if event.type == pygame.KEYDOWN:
                 if game_state == STATE_MENU:
@@ -186,6 +205,7 @@ def main():
 
             # Check for shield spawn
             if not shield_spawned and random.random() < 0.005:
+                shield_y > HEIGHT
                 shield_x = random.choice([100, 350, 600])
                 shield_y = -shield_radius
                 shield_spawned = True
@@ -230,10 +250,7 @@ def main():
                 obstacle_y = -obstacle_height
                 obstacle_x = random.choice([0, 250, 500])
 
-            # Reset shield if it falls off the screen
-            if shield_y > HEIGHT and random.random() < 0.005:
-                shield_spawned = False
-
+        
         clock.tick(FPS)  
 
 if __name__ == "__main__":
