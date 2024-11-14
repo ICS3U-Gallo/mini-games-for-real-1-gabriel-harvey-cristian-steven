@@ -12,30 +12,9 @@ pygame.display.set_caption("Shooter Game")
 
 black = (0, 0, 0)
 green = (0, 255, 0)
-
-enemy_width = 20
-enemy_height = 40
-enemies = [{'x': screen_width, 'y': random.randint(0, screen_height - enemy_height)} for _ in range(3)]
-enemy_speed = 1.5
-
-enemy_bullets = []
-
-running = True
-while running:
-import pygame
-import math
-import random
-import time
-
-pygame.init()
-
-screen_width = 800
-screen_height = 600
-screen = pygame.display.set_mode((screen_width, screen_height))
-pygame.display.set_caption("Shooter Game")
-
-black = (0, 0, 0)
-green = (0, 255, 0)
+red = (255, 0, 0)
+blue = (0, 0, 255)
+white = (255, 255, 255)
 
 player_width = 20
 player_height = 40
@@ -43,22 +22,66 @@ player_x = 50
 player_y = screen_height // 2
 player_speed = 5
 
-bullet_speed = 10
-bullets = []
-
 enemy_width = 20
 enemy_height = 40
-enemies = [{'x': screen_width, 'y': random.randint(0, screen_height - enemy_height), 'last_shot': time.time()} for _ in range(3)]
+enemies = [{'x': screen_width, 'y': random.randint(0, screen_height - enemy_height), 'cycle': 0, 'last_shot': time.time()} for _ in range(5)]
 enemy_speed = 1.5
 enemy_bullets = []
 
-score = 0
-font = pygame.font.Font(None, 36)
+bullet_speed = 10
+bullets = []
 
+score = 0
+missed_enemies = 0
+win_condition = 20
+lose_condition = 3
+
+font = pygame.font.Font(None, 36)
+clock = pygame.time.Clock()
 running = True
+
+def draw_running_stick_figure(x, y, color, cycle):
+    offset = 0
+    if cycle % 8 in [0, 1, 2, 3]:
+        offset = -2
+    elif cycle % 8 in [4, 5, 6, 7]:
+        offset = 2
+    y += offset
+    pygame.draw.circle(screen, color, (x + enemy_width // 2, y - 10), 10)
+    pygame.draw.line(screen, color, (x + enemy_width // 2, y), (x + enemy_width // 2, y + 20), 2)
+    if cycle % 16 < 8:
+        pygame.draw.line(screen, color, (x + enemy_width // 2 - 10, y + 5), (x + enemy_width // 2, y + 10), 2)
+        pygame.draw.line(screen, color, (x + enemy_width // 2, y + 10), (x + enemy_width // 2 + 10, y + 5), 2)
+        pygame.draw.line(screen, color, (x + enemy_width // 2, y + 20), (x + enemy_width // 2 - 10, y + 30), 2)
+        pygame.draw.line(screen, color, (x + enemy_width // 2, y + 20), (x + enemy_width // 2 + 10, y + 30), 2)
+    else:
+        pygame.draw.line(screen, color, (x + enemy_width // 2 - 10, y + 5), (x + enemy_width // 2 - 15, y + 10), 2)
+        pygame.draw.line(screen, color, (x + enemy_width // 2 + 10, y + 5), (x + enemy_width // 2 + 15, y + 10), 2)
+        pygame.draw.line(screen, color, (x + enemy_width // 2, y + 20), (x + enemy_width // 2 - 5, y + 30), 2)
+        pygame.draw.line(screen, color, (x + enemy_width // 2, y + 20), (x + enemy_width // 2 + 15, y + 30), 2)
+
+def move_player():
+    global player_y
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_UP] and player_y > 0:
+        player_y -= player_speed
+    if keys[pygame.K_DOWN] and player_y < screen_height - player_height:
+        player_y += player_speed
+
 while running:
     screen.fill(black)
-
+    if score >= win_condition:
+        text = font.render("You Win!", True, green)
+        screen.blit(text, (screen_width // 2 - 50, screen_height // 2))
+        pygame.display.flip()
+        pygame.time.wait(3000)
+        break
+    elif missed_enemies >= lose_condition:
+        text = font.render("You Lose!", True, red)
+        screen.blit(text, (screen_width // 2 - 50, screen_height // 2))
+        pygame.display.flip()
+        pygame.time.wait(3000)
+        break
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -67,11 +90,7 @@ while running:
             angle = math.atan2(mouse_y - player_y, mouse_x - player_x)
             bullets.append({'x': player_x + player_width // 2, 'y': player_y, 'angle': angle})
 
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_UP] and player_y > 0:
-        player_y -= player_speed
-    if keys[pygame.K_DOWN] and player_y < screen_height - player_height:
-        player_y += player_speed
+    move_player()
 
     for bullet in bullets:
         bullet['x'] += bullet_speed * math.cos(bullet['angle'])
@@ -80,13 +99,16 @@ while running:
 
     for enemy in enemies:
         enemy['x'] -= enemy_speed
+        enemy['cycle'] += 1
+        if enemy['cycle'] >= 16:
+            enemy['cycle'] = 0
         if enemy['x'] < -enemy_width:
+            missed_enemies += 1
             enemies.remove(enemy)
-            enemies.append({'x': screen_width, 'y': random.randint(0, screen_height - enemy_height), 'last_shot': time.time()})
-        
+            enemies.append({'x': screen_width, 'y': random.randint(0, screen_height - enemy_height), 'cycle': 0, 'last_shot': time.time()})
         if time.time() - enemy['last_shot'] > 2:
             angle = math.atan2(player_y - enemy['y'], player_x - enemy['x'])
-            enemy_bullets.append({'x': enemy['x'], 'y': enemy['y'], 'angle': angle})
+            enemy_bullets.append({'x': enemy['x'] + enemy_width // 2, 'y': enemy['y'] + enemy_height // 2, 'angle': angle})
             enemy['last_shot'] = time.time()
 
     for enemy_bullet in enemy_bullets:
@@ -94,31 +116,38 @@ while running:
         enemy_bullet['y'] += bullet_speed * math.sin(enemy_bullet['angle'])
     enemy_bullets = [bullet for bullet in enemy_bullets if 0 <= bullet['x'] <= screen_width and 0 <= bullet['y'] <= screen_height]
 
-    for bullet in enemy_bullets:
-        if (player_x < bullet['x'] < player_x + player_width and
-            player_y < bullet['y'] < player_y + player_height):
-            print("You Lose!")
-            running = False
-
-    pygame.draw.rect(screen, green, (player_x, player_y, player_width, player_height))
-
     for bullet in bullets:
-        pygame.draw.circle(screen, (255, 0, 0), (int(bullet['x']), int(bullet['y'])), 3)
-
-    for enemy in enemies:
-        pygame.draw.rect(screen, (255, 255, 255), (enemy['x'], enemy['y'], enemy_width, enemy_height))
+        for enemy in enemies:
+            if (enemy['x'] < bullet['x'] < enemy['x'] + enemy_width and
+                enemy['y'] < bullet['y'] < enemy['y'] + enemy_height):
+                bullets.remove(bullet)
+                enemies.remove(enemy)
+                score += 1
+                enemies.append({'x': screen_width, 'y': random.randint(0, screen_height - enemy_height), 'cycle': 0, 'last_shot': time.time()})
+                break
 
     for enemy_bullet in enemy_bullets:
-        pygame.draw.circle(screen, (0, 0, 255), (int(enemy_bullet['x']), int(enemy_bullet['y'])), 3)
+        if (player_x < enemy_bullet['x'] < player_x + player_width and
+            player_y < enemy_bullet['y'] < player_y + player_height):
+            missed_enemies = lose_condition
 
-    score_text = font.render(f"Score: {score}", True, (255, 255, 255))
+    draw_running_stick_figure(player_x, player_y, green, cycle=0)
+
+    for bullet in bullets:
+        pygame.draw.circle(screen, red, (int(bullet['x']), int(bullet['y'])), 3)
+
+    for enemy_bullet in enemy_bullets:
+        pygame.draw.circle(screen, blue, (int(enemy_bullet['x']), int(enemy_bullet['y'])), 3)
+
+    for enemy in enemies:
+        draw_running_stick_figure(enemy['x'], enemy['y'], white, enemy['cycle'])
+
+    score_text = font.render(f"Score: {score}", True, white)
+    missed_text = font.render(f"Missed: {missed_enemies}", True, white)
     screen.blit(score_text, (10, 10))
+    screen.blit(missed_text, (10, 40))
 
     pygame.display.flip()
+    clock.tick(30)
 
 pygame.quit()
-
-
-
- 
-
