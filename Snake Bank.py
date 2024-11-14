@@ -9,21 +9,21 @@ pygame.init()
 WHITE = (255, 255, 255)
 BROWN = (74, 58, 43)
 RED = (156, 11, 11)
+GRAY = (169, 169, 169)  # Gray color for background
+GREEN = (0, 255, 0)  # Green color for the food
 
 # Define the screen dimensions
-SCREEN_WIDTH = 600
-SCREEN_HEIGHT = 400
+SCREEN_WIDTH = 1000
+SCREEN_HEIGHT = 800
 
 # Set the display size
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption('Snake Game')
 
-# Define the snake block size
+# Define the snake block size (doubled)
 BLOCK_SIZE = 40
 
-# Load images and scale to fit
-background_image = pygame.transform.scale(pygame.image.load("floorground.jpg"), (SCREEN_WIDTH, SCREEN_HEIGHT))
-food_image = pygame.transform.scale(pygame.image.load("cashmoney.jpg"), (BLOCK_SIZE, BLOCK_SIZE))
+# Load and scale the snake's head image
 head_image = pygame.transform.scale(pygame.image.load("robber.jpg"), (BLOCK_SIZE, BLOCK_SIZE))
 
 # Set the font for the score
@@ -74,8 +74,8 @@ def gameLoop():
     while not game_over:
 
         while game_close:
-            screen.blit(background_image, (0, 0))  # Draw the background image
-            message("You Lost! Press Q-Quit or C-Play Again", RED)
+            screen.fill(GRAY)  # Set background color to gray
+            message("You Lost!                                 Press Q-Quit or C-Play Again", RED)
             Your_score(Length_of_snake - 1)
             pygame.display.update()
 
@@ -111,10 +111,10 @@ def gameLoop():
 
         x1 += x1_change
         y1 += y1_change
-        screen.blit(background_image, (0, 0))  # Draw the background image each frame
+        screen.fill(GRAY)  # Fill the screen with gray color each frame
 
-        # Draw the food image instead of a rectangle
-        screen.blit(food_image, (foodx, foody))
+        # Draw the green food block
+        pygame.draw.rect(screen, GREEN, [foodx, foody, BLOCK_SIZE, BLOCK_SIZE])
 
         # Update the snake's position
         snake_Head = []
@@ -138,7 +138,7 @@ def gameLoop():
         pygame.display.update()
 
         # Check if the snake eats the food
-        if x1 == foodx and y1 == foody:
+        if abs(x1 - foodx) < BLOCK_SIZE and abs(y1 - foody) < BLOCK_SIZE:  # Adjusted collision condition
             foodx = round(random.randrange(0, SCREEN_WIDTH - BLOCK_SIZE) / BLOCK_SIZE) * BLOCK_SIZE
             foody = round(random.randrange(0, SCREEN_HEIGHT - BLOCK_SIZE) / BLOCK_SIZE) * BLOCK_SIZE
             Length_of_snake += 1
