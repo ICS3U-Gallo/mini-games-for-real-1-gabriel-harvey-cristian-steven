@@ -28,14 +28,17 @@ death_animation = False
 death_velocity = 0
 mario_x = mario_spawn_x
 mario_y = mario_spawn_y
-level = 1
-sweeping_killbrick = None  # Initialize to None by default
+level = 3
+sweeping_killbrick = None
 sweeping_speed = 10
 sweeping_direction = 1 
 moving_platform = None
 moving_speed = 5
+beat_blocks = []
+beat_interval = 1000 
+last_toggle_time = pygame.time.get_ticks()
+beat_block_visible = True
 
-# Define platforms, walls, and killbricks for each level
 def load_stage(level):
     global platforms, killbricks, walls, mario_y, moving_platform, sweeping_killbrick
     if level == 1:
@@ -56,8 +59,8 @@ def load_stage(level):
             (111, 289.9, 20, 20)
         ] + [(x, 255, 15, 15) for x in range(300, 600, 75)]
         walls = [(-30, -20, 50, 1000), (620, -20, 50, 1000)]
-        moving_platform = None  # No moving platform in level 1
-        sweeping_killbrick = None  # No sweeping killbrick in level 1
+        moving_platform = None
+        sweeping_killbrick = None
     elif level == 2:
         platforms = [
             (15, 430, 615, 10),
@@ -81,9 +84,23 @@ def load_stage(level):
         ]
         walls = [(-30, -20, 50, 1000), (620, -20, 50, 1000)]
         moving_platform = pygame.Rect(15, 400, 50, 10)
-        sweeping_killbrick = pygame.Rect(200, 220, 50, 10)  # Only in level 2
+        sweeping_killbrick = pygame.Rect(200, 220, 50, 10)
+    elif level == 3:
+        platforms = [
+            (15, 430, 615, 10),
+            (200, 300, 100, 10),
+            (400, 390, 100, 10),
+        ]
+        killbricks = [
+            (440, 390, 20, 40)
+        ]
+        moving_platform = None
+        sweeping_killbrick = None
+
     mario_x = mario_spawn_x
     mario_y = mario_spawn_y
+    walls = [(-30, -20, 50, 1000), (620, -20, 50, 1000)]
+
 
 # Load the initial stage
 load_stage(level)
@@ -105,7 +122,7 @@ while running:
         if keys[pygame.K_RIGHT]:
             mario_x += mario_speed
         if keys[pygame.K_SPACE] and ground:
-            velocity_y = -25  # Jump strength
+            velocity_y = -25
             ground = False    
 
         if not ground:
@@ -114,6 +131,10 @@ while running:
         mario_y += velocity_y
 
         mario_rect = pygame.Rect(mario_x, mario_y, 15, 25)
+        current_time = pygame.time.get_ticks()
+        if current_time - last_toggle_time > beat_interval:
+            beat_block_visible = not beat_block_visible
+            last_toggle_time = current_time
 
         ground = False  # Assume Mario is in the air
         for platform in platforms + ([moving_platform] if moving_platform else []):
@@ -176,13 +197,9 @@ while running:
         if moving_platform.y < -moving_platform.height:
             moving_platform.y = HEIGHT
 
-    if mario_y < 0:
-        level += 1
-        load_stage(level)
     # Drawing
     screen.fill((36, 40, 64))
 
-    # Draw killbricks
     for kill in killbricks:
         pygame.draw.rect(screen, (255, 0, 0), kill)
 
@@ -195,18 +212,25 @@ while running:
     if sweeping_killbrick:
         pygame.draw.rect(screen, (255, 0, 0), sweeping_killbrick)
 
+    if mario_y < 0:
+        level += 1
+        load_stage(level)
+
     if death_animation:
         moving_speed = 0
 
     for wall in walls:
         pygame.draw.rect(screen, (74, 74, 74), wall)
 
+    if beat_block_visible:
+        for beat_block in beat_blocks:
+            pygame.draw.rect(screen, (0, 128, 255), beat_block)
+
     pygame.draw.rect(screen, (66, 66, 66), (mario_x, mario_y, 15, 15))
     pygame.draw.rect(screen, (247, 232, 119), (mario_x + 2.5, mario_y - 10, 10, 10))
     pygame.draw.rect(screen, (247, 232, 119), (mario_x + 2, mario_y + 15, 4, 10))
     pygame.draw.rect(screen, (247, 232, 119), (mario_x + 9, mario_y + 15, 4, 10))
 
-    # Refresh the display
     pygame.display.flip()
     clock.tick(30)
 
