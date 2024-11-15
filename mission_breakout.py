@@ -30,7 +30,7 @@ death_animation = False
 death_velocity = 0
 mario_x = mario_spawn_x
 mario_y = mario_spawn_y
-level = 1
+level = 1 # CHANGE THIS TO MOD WHAT LEVEL YOU WANT TO GO TO!!!!!
 sweeping_killbrick = None
 sweeping_speed = 10
 sweeping_direction = 1 
@@ -40,9 +40,11 @@ beat_blocks = []
 beat_interval = 1000 
 last_toggle_time = pygame.time.get_ticks()
 beat_block_visible = True
+font = pygame.font.Font(None, 24)
+font2 = pygame.font.Font(None, 12)
 
 def load_stage(level):
-    global platforms, killbricks, walls, mario_y, moving_platform, sweeping_killbrick, beat_blocks
+    global platforms, killbricks, walls, mario_y, moving_platform, sweeping_killbrick, beat_blocks, mario_x
     if level == 1:
         platforms = [
             (470, 430, 150, 10),
@@ -166,7 +168,7 @@ def load_stage(level):
             (385, 210, 50, 10),
             (385, 220, 10, 50)
         ] + [(x, 415, 25, 25) for x in range(300, 400, 80)]
-        mario_x = mario_spawn_x-200
+        mario_x = mario_spawn_x-250
         mario_y = mario_spawn_y
         sweeping_killbrick = None
         beat_blocks = []
@@ -237,6 +239,7 @@ while running:
                 print("Game Over!")
                 time.sleep(0.5)
 
+
         if level == 2 and sweeping_killbrick:
             sweeping_killbrick.x += sweeping_speed * sweeping_direction
             if sweeping_killbrick.left <= 150 or sweeping_killbrick.right >= 610:
@@ -291,6 +294,16 @@ while running:
 
     for kill in killbricks:
         pygame.draw.rect(screen, (255, 0, 0), kill)
+
+    
+    if level == 4:
+        text = font2.render("don't fail this lol", True, (255, 255, 255))
+        screen.blit(text, (460, 430))  # Center the text
+
+
+    if level == 1:
+        text = font.render("Dodge the traps and get to your getaway vehicle.", True, (255, 255, 255))
+        screen.blit(text, (60, 430))  # Center the text
 
     for platform in platforms:
         pygame.draw.rect(screen, (64, 64, 64), platform)
