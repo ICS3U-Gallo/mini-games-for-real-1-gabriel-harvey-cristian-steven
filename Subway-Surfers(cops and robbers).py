@@ -65,6 +65,7 @@ previous_score = 0
 # Game states
 STATE_MENU = 0
 STATE_GAME = 1
+STATE_WIN = 2  # New game state for the win screen
 
 # Initialize fonts
 font = pygame.font.Font(None, 36)
@@ -98,6 +99,20 @@ def draw_menu():
     screen.blit(controls_text, (WIDTH // 2 - controls_text.get_width() // 2, 300))
     screen.blit(shield_text, (WIDTH //2 - shield_text.get_width() // 2, 350))
     screen.blit(game_text, (WIDTH // 2 - game_text.get_width() // 2, 400))
+
+    pygame.display.flip()
+
+# Draw the win screen
+def draw_win():
+    screen.fill(BLACK)
+
+    win_text = big_font.render("You Have Escapsed!", True, GREEN)
+    score_text = font.render(f"Final Score: {score}", True, WHITE)
+    restart_text = font.render("Press ENTER to Play Again", True, WHITE)
+
+    screen.blit(win_text, (WIDTH // 2 - win_text.get_width() // 2, HEIGHT // 2 - 100))
+    screen.blit(score_text, (WIDTH // 2 - score_text.get_width() // 2, HEIGHT // 2))
+    screen.blit(restart_text, (WIDTH // 2 - restart_text.get_width() // 2, HEIGHT // 2 + 50))
 
     pygame.display.flip()
 
@@ -170,8 +185,14 @@ def main():
                 if game_state == STATE_MENU:
                     if event.key == pygame.K_RETURN:  
                         game_state = STATE_GAME
-        
-       # Shield immunity logic: Disable shield immunity after the set duration             
+                elif game_state == STATE_WIN:
+                    if event.key == pygame.K_RETURN:  
+                        game_state = STATE_MENU
+                        score = 0
+                        obstacle_speed = 10
+                        lives = 3
+
+        # Shield immunity logic: Disable shield immunity after the set duration             
         if Shieldimmunity and time.time() - shield_immunity_start_time >= shield_immunity_duration:
             Shieldimmunity = False 
 
@@ -185,7 +206,7 @@ def main():
         if player_x > WIDTH - player_width:
             player_x = WIDTH - player_width
 
-        #player movments
+        #player movements
         keys = pygame.key.get_pressed()
         if keys[pygame.K_LEFT]:  
             player_x -= player_speed
@@ -240,7 +261,7 @@ def main():
 
             # End game if score reaches 5000
             if score >= 5000:
-                game_state = STATE_MENU 
+                game_state = STATE_WIN
 
             # Draw the game screen
             draw_game()
@@ -250,7 +271,9 @@ def main():
                 obstacle_y = -obstacle_height
                 obstacle_x = random.choice([0, 250, 500])
 
-        
+        elif game_state == STATE_WIN:
+            draw_win()
+
         clock.tick(FPS)  
 
 if __name__ == "__main__":
