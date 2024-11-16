@@ -30,7 +30,7 @@ death_animation = False
 death_velocity = 0
 mario_x = mario_spawn_x
 mario_y = mario_spawn_y
-level = 1 # CHANGE THIS TO MOD WHAT LEVEL YOU WANT TO GO TO!!!!!
+level = 3 # CHANGE THIS TO MOD WHAT LEVEL YOU WANT TO GO TO!!!!!
 sweeping_killbrick = None
 sweeping_speed = 10
 sweeping_direction = 1 
@@ -115,7 +115,8 @@ def load_stage(level):
             (540, 240, 95, 10),
             (600, 120, 20, 10),
             (360, 120, 20, 10),
-            (240, 120, 20, 10)
+            (240, 120, 20, 10),
+            (120, 120, 20, 10)
         ]
         killbricks = [
             (20, 420, 380, 10),
@@ -132,7 +133,9 @@ def load_stage(level):
             pygame.Rect(600, 180, 20, 10),
             pygame.Rect(520, 120, 20, 10),
             pygame.Rect(440, 120, 20, 10),
-            pygame.Rect(240, 60, 20, 10),
+            pygame.Rect(140, 120, 100, 10),
+            pygame.Rect(90, 80, 10, 10),
+            pygame.Rect(50, 30, 10, 10)
         ]
         mario_x = mario_spawn_x
         mario_y = mario_spawn_y
@@ -141,7 +144,7 @@ def load_stage(level):
         pygame.mixer.music.load("getout.mp3")
         pygame.mixer.music.play(-1)
         platforms = [
-            (15, 430, 425, 10),
+            (5, 430, 400, 10),
             (245, 160, 90, 50),
             (245, 200, 40, 100),
             (275, 270, 60, 30),
@@ -151,9 +154,9 @@ def load_stage(level):
             (345, 200, 40, 100),
             (375, 270, 60, 30),
             (395, 220, 40, 50),
-            (435, 430, 10, 200),
-            (540, 430, 10, 200),
-            (540, 430, 200, 10),
+            (405, 430, 10, 200),
+            (465, 440, 5, 5),
+            (535, 430, 200, 10),
         ]
         killbricks = [
             (235, 150, 100, 10),
@@ -167,8 +170,8 @@ def load_stage(level):
             (435, 150, 10, 150),
             (385, 210, 50, 10),
             (385, 220, 10, 50)
-        ] + [(x, 415, 25, 25) for x in range(300, 400, 80)]
-        mario_x = mario_spawn_x-250
+        ] + [(x, 415, 25, 25) for x in range(100, 400, 80)]
+        mario_x = mario_spawn_x-450
         mario_y = mario_spawn_y
         sweeping_killbrick = None
         beat_blocks = []
@@ -298,7 +301,7 @@ while running:
     
     if level == 4:
         text = font2.render("don't fail this lol", True, (255, 255, 255))
-        screen.blit(text, (460, 430))  # Center the text
+        screen.blit(text, (440, 460))  # Center the text
 
 
     if level == 1:
