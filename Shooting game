@@ -63,9 +63,9 @@ def draw_running_stick_figure(x, y, color, cycle):
 def move_player():
     global player_y
     keys = pygame.key.get_pressed()
-    if keys[pygame.K_UP] and player_y > 0:
+    if keys[pygame.K_w] and player_y > 0:
         player_y -= player_speed
-    if keys[pygame.K_DOWN] and player_y < screen_height - player_height:
+    if keys[pygame.K_s] and player_y < screen_height - player_height:
         player_y += player_speed
 
 while running:
