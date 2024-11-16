@@ -22,6 +22,14 @@ pygame.mixer.music.play(-1)
 mario_spawn_x = 500
 mario_spawn_y = 400
 mario_speed = 10
+carbody_x = 545
+carbody_y = 390
+wheel_x_offset = 45
+wheel_y_offset = 25
+wheel1_x = carbody_x + 45
+wheel1_y = carbody_y + 30
+wheel2_x = carbody_x - 5
+wheel2_y = carbody_y + 30
 velocity_y = 0
 gravity = 5
 ground = False
@@ -332,10 +340,10 @@ while running:
             pygame.draw.rect(screen, (90,90,90), beat_block)
 
     if level == 4:
-        pygame.draw.rect(screen, (66, 66, 66), (545, 390, 45, 25))
-        pygame.draw.rect(screen, (100,100,100), (590, 400, 15, 15))
-        pygame.draw.circle(screen, (24, 24, 24), (590, 420), 7.5)
-        pygame.draw.circle(screen, (24, 24, 24), (550, 420), 7.5)
+        pygame.draw.rect(screen, (66,66,66), (carbody_x, carbody_y, wheel_x_offset, wheel_y_offset))
+        pygame.draw.rect(screen, (100,100,100), (carbody_x + wheel_x_offset, carbody_y + 9.5, 15, 15))
+        pygame.draw.circle(screen, (24, 24, 24), (carbody_x + 10, carbody_y + wheel_y_offset + 7.5), 7.5)
+        pygame.draw.circle(screen, (24, 24, 24), (carbody_x + 10 + 40, carbody_y + wheel_y_offset + 7.5), 7.5)
 
     pygame.draw.rect(screen, (66, 66, 66), (mario_x, mario_y, 15, 15))
     pygame.draw.rect(screen, (247, 232, 119), (mario_x + 2.5, mario_y - 10, 10, 10))
